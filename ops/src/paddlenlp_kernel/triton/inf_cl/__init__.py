@@ -13,4 +13,5 @@
 # limitations under the License.
 
 from .flash import cal_flash_loss
+from .inf_cl_loss import *
 from .ring import cal_inf_loss, cal_ring_loss

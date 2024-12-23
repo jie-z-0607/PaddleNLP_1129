@@ -24,19 +24,43 @@ __all__ = ["Simple_Inf_cl_loss", "Matryoshka_Inf_cl_loss"]
 
 class Simple_Inf_cl_loss(nn.Layer):
     def __init__(self, inf_cl_head_dim=64):
+        """
+        Initializes the Simple Inf_cl Loss class.
+
+        Args:
+            inf_cl_head_dim (int, optional): Dimension of the projection head. Default is 64.
+        """
         super().__init__()
         self.head_dim = inf_cl_head_dim
 
     def forward(self, q_reps, p_reps):
-        group_size = p_reps.shape[0] // q_reps.shape[0]
-        labels = paddle.arange(q_reps.shape[0], dtype="int64")
-        labels = labels * group_size
+        """
+        Computes the instance discrimination loss.
+
+        Args:
+            q_reps (Tensor): Query representations.
+            p_reps (Tensor): key representations.
+
+        Returns:
+            Tensor: The computed loss.
+        """
+        group_size = p_reps.shape[0] // q_reps.shape[0]  # Number of keys per query
+        labels = paddle.arange(q_reps.shape[0], dtype="int64")  # Generate labels for queries
+        labels = labels * group_size  # Adjust labels based on group size
         loss = cal_inf_loss(q_reps, p_reps, labels=labels, scale=None, head_dim=self.head_dim)
         return loss
 
 
 class Matryoshka_Inf_cl_loss(nn.Layer):
     def __init__(self, embedding_matryoshka_dims: Optional[List[int]] = None, inf_cl_head_dim=64):
+        """
+        Initializes the Matryoshka Inf_cl Loss class.
+
+        Args:
+            embedding_matryoshka_dims (List[int], optional): List of dimensions for Matryoshka embeddings.
+                If None, no Matryoshka embedding is used. Default is None.
+            inf_cl_head_dim (int, optional): Dimension of the projection head. Default is 64.
+        """
         super().__init__()
         if embedding_matryoshka_dims is None:
             self.embedding_matryoshka_dims = []
@@ -45,17 +69,35 @@ class Matryoshka_Inf_cl_loss(nn.Layer):
         self.loss_fn = Simple_Inf_cl_loss(inf_cl_head_dim)
 
     def forward(self, q_reps, p_reps):
+        """
+        Computes the Matryoshka instance discrimination loss.
+
+        Args:
+            q_reps (Tensor): Query representations.
+            p_reps (Tensor): key representations.
+
+        Returns:
+            Tensor: The computed loss.
+        """
         if len(self.embedding_matryoshka_dims) > 0:
             loss = 0.0
             for dim in self.embedding_matryoshka_dims:
-                reduced_q_reps = q_reps[:, :dim]
-                reduced_q_reps = nn.functional.normalize(reduced_q_reps, axis=-1)
+                reduced_q_reps = q_reps[:, :dim]  # Reduce query representations to the current Matryoshka dimension
+                reduced_q_reps = nn.functional.normalize(
+                    reduced_q_reps, axis=-1
+                )  # Normalize the reduced query representations along the last axis
 
-                reduced_p_reps = p_reps[:, :dim]
-                reduced_p_reps = nn.functional.normalize(reduced_p_reps, axis=-1)
+                reduced_p_reps = p_reps[:, :dim]  # Reduce key representations to the current Matryoshka dimension
+                reduced_p_reps = nn.functional.normalize(
+                    reduced_p_reps, axis=-1
+                )  # Normalize the reduced key representations along the last axis
 
-                dim_loss = self.loss_fn(reduced_q_reps, reduced_p_reps)
+                dim_loss = self.loss_fn(
+                    reduced_q_reps, reduced_p_reps
+                )  # Compute the loss for the current Matryoshka dimension using the internal loss function
                 loss += dim_loss
         else:
-            loss = self.loss_fn(q_reps, p_reps)
+            loss = self.loss_fn(
+                q_reps, p_reps
+            )  # If no Matryoshka dimensions are specified, compute the loss using the full representations
         return loss

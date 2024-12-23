@@ -18,10 +18,14 @@ import paddle
 from paddle.base import core
 from paddle.distributed import fleet
 
-from ops.src.paddlenlp_kernel.triton.inf_cl.inf_cl_loss import (
-    Matryoshka_Inf_cl_loss,
-    Simple_Inf_cl_loss,
-)
+try:
+    from paddlenlp_kernel.triton.inf_cl import (
+        Matryoshka_Inf_cl_loss,
+        Simple_Inf_cl_loss,
+    )
+except ImportError:
+    print("WARNING: paddlenlp_kernels are not available.")
+
 from paddlenlp.trainer import Trainer
 from paddlenlp.transformers.contrastive_loss import (
     MatryoshkaContrastiveLoss,

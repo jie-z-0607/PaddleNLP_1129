@@ -21,7 +21,7 @@ from paddle.distributed import fleet
 from paddlenlp.utils.log import logger
 
 try:
-    from paddlenlp_kernel.triton.inf_cl import MatryoshkaInfclLoss, SimpleInfclloss
+    from paddlenlp_kernel.triton.inf_cl import MatryoshkaInfclLoss, SimpleInfclLoss
 except ImportError:
     logger.warning(
         "Paddlenlp_kernels are not available, which means the inf_cl loss cannot be used. If you wish to use the inf_cl loss, please follow the instructions in the README.md on the `ops`."
@@ -63,7 +63,7 @@ class EmbeddingTrainer(Trainer):
         else:
             if model_args.loss_type == "inf_cl":
                 self.embedding_negatives_cross_device = False
-                self.loss_fn = SimpleInfclloss(model_args.inf_cl_head_dim)
+                self.loss_fn = SimpleInfclLoss(model_args.inf_cl_head_dim)
             elif model_args.loss_type == "contrastive":
                 self.loss_fn = SimpleContrastiveLoss(model_args.embedding_temperature)
 

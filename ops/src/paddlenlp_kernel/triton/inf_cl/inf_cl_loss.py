@@ -19,10 +19,10 @@ import paddle.nn as nn
 
 from .ring import cal_inf_loss
 
-__all__ = ["SimpleInfclloss", "MatryoshkaInfclLoss"]
+__all__ = ["SimpleInfclLoss", "MatryoshkaInfclLoss"]
 
 
-class SimpleInfclloss(nn.Layer):
+class SimpleInfclLoss(nn.Layer):
     def __init__(self, inf_cl_head_dim=64):
         """
         Initializes the Simple Inf_cl Loss class.
@@ -66,7 +66,7 @@ class MatryoshkaInfclLoss(nn.Layer):
             self.embedding_matryoshka_dims = []
         else:
             self.embedding_matryoshka_dims = embedding_matryoshka_dims
-        self.loss_fn = SimpleInfclloss(inf_cl_head_dim)
+        self.loss_fn = SimpleInfclLoss(inf_cl_head_dim)
 
     def forward(self, q_reps, p_reps):
         """

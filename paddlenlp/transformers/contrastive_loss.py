@@ -87,12 +87,10 @@ class SimpleInfclLoss(nn.Layer):
         Returns:
             Tensor: The computed loss.
         """
-        from paddlenlp.utils.log import logger
-
         try:
             from paddlenlp_kernel.triton.inf_cl import cal_inf_loss
         except ImportError:
-            logger.warning(
+            raise ImportError(
                 "Paddlenlp_kernels are not available, which means the inf_cl loss cannot be used. If you wish to use the inf_cl loss, please follow the instructions in the README.md on the `ops`."
             )
         group_size = p_reps.shape[0] // q_reps.shape[0]  # Number of keys per query

@@ -18,19 +18,12 @@ import paddle
 from paddle.base import core
 from paddle.distributed import fleet
 
-from paddlenlp.utils.log import logger
-
-try:
-    from paddlenlp_kernel.triton.inf_cl import MatryoshkaInfclLoss, SimpleInfclLoss
-except ImportError:
-    logger.warning(
-        "Paddlenlp_kernels are not available, which means the inf_cl loss cannot be used. If you wish to use the inf_cl loss, please follow the instructions in the README.md on the `ops`."
-    )
-
 from paddlenlp.trainer import Trainer
 from paddlenlp.transformers.contrastive_loss import (
     MatryoshkaContrastiveLoss,
+    MatryoshkaInfclLoss,
     SimpleContrastiveLoss,
+    SimpleInfclLoss,
 )
 from paddlenlp.transformers.embedding_utils import dist_gather_tensor_with_gradient
 

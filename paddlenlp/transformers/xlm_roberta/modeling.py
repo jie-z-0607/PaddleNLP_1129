@@ -1,4 +1,5 @@
 # coding=utf-8
+# Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 # Copyright 2019 Facebook AI Research and the HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
 #
@@ -22,8 +23,10 @@ import paddle
 from paddle import nn
 from paddle.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
-from paddlenlp.transformers.activations import ACT2FN
-from paddlenlp.transformers.model_outputs import (
+from ...utils import logger
+from ...utils.converter import StateDictNameMapping
+from ..activations import ACT2FN
+from ..model_outputs import (
     BaseModelOutputWithPastAndCrossAttentions,
     BaseModelOutputWithPoolingAndCrossAttentions,
     CausalLMOutputWithCrossAttentions,
@@ -33,14 +36,11 @@ from paddlenlp.transformers.model_outputs import (
     SequenceClassifierOutput,
     TokenClassifierOutput,
 )
-from paddlenlp.transformers.model_utils import (
+from ..model_utils import (
+    PretrainedModel,
     apply_chunking_to_forward,
     register_base_model,
 )
-from paddlenlp.utils.converter import StateDictNameMapping
-
-from ...utils import logger
-from ..model_utils import PretrainedModel
 from .configuration import XLMRobertaConfig
 
 XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST = [
@@ -449,7 +449,7 @@ class XLMRobertaEncoder(nn.Layer):
         super().__init__()
         self.config = config
         self.layer = nn.LayerList([XLMRobertaLayer(config) for _ in range(config.num_hidden_layers)])
-        self.gradient_checkpointing = False
+        self.enable_recompute = False
 
     def forward(
         self,
@@ -467,7 +467,7 @@ class XLMRobertaEncoder(nn.Layer):
         all_self_attentions = () if output_attentions else None
         all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
 
-        if self.gradient_checkpointing and self.training:
+        if self.enable_recompute and self.training:
             if use_cache:
                 logger.warning_once(
                     "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
@@ -481,7 +481,7 @@ class XLMRobertaEncoder(nn.Layer):
 
             past_key_value = past_key_values[i] if past_key_values is not None else None
 
-            if self.gradient_checkpointing and not hidden_states.stop_gradient:
+            if self.enable_recompute and not hidden_states.stop_gradient:
                 layer_outputs = self._gradient_checkpointing_func(
                     layer_module.__call__,
                     hidden_states,
@@ -559,25 +559,6 @@ class XLMRobertaPretrainedModel(PretrainedModel):
     base_model_prefix = "roberta"
     supports_gradient_checkpointing = True
     _no_split_modules = ["XLMRobertaEmbeddings", "XLMRobertaSelfAttention"]
-
-    _deprecated_dict = {
-        "key": ".self_attn.q_proj.",
-        "name_mapping": {
-            # common
-            "encoder.layers.": "encoder.layer.",
-            # embeddings
-            "embeddings.layer_norm.": "embeddings.LayerNorm.",
-            # transformer
-            ".self_attn.q_proj.": ".attention.self.query.",
-            ".self_attn.k_proj.": ".attention.self.key.",
-            ".self_attn.v_proj.": ".attention.self.value.",
-            ".self_attn.out_proj.": ".attention.output.dense.",
-            ".norm1.": ".attention.output.LayerNorm.",
-            ".linear1.": ".intermediate.dense.",
-            ".linear2.": ".output.dense.",
-            ".norm2.": ".output.LayerNorm.",
-        },
-    }
 
     def can_generate(self) -> bool:
         return False
@@ -934,7 +915,7 @@ class XLMRobertaForCausalLM(XLMRobertaPretrainedModel):
         Example:
 
         ```python
-        >>> from ppdiffusers.transformers import AutoTokenizer, XLMRobertaForCausalLM, AutoConfig
+        >>> from paddlenlp.transformers import AutoTokenizer, XLMRobertaForCausalLM, AutoConfig
         >>> import paddle
 
         >>> tokenizer = AutoTokenizer.from_pretrained("roberta-base")

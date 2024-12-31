@@ -1,4 +1,5 @@
 # coding=utf-8
+# Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 # Copyright 2018 Google AI, Google Brain and Carnegie Mellon University Authors and the HuggingFace Inc. team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,19 +22,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import sentencepiece as spm
 
-from paddlenlp.transformers.tokenizer_utils import AddedToken
-from paddlenlp.transformers.tokenizer_utils import (
-    PretrainedTokenizer as PPNLPPretrainedTokenizer,
-)
-
 from ...utils import logger
+from ..tokenizer_utils import AddedToken, PretrainedTokenizer
 
 SPIECE_UNDERLINE = "▁"
 
 __all__ = ["XLMRobertaTokenizer"]
 
 
-class XLMRobertaTokenizer(PPNLPPretrainedTokenizer):
+class XLMRobertaTokenizer(PretrainedTokenizer):
     """
     Adapted from [`RobertaTokenizer`] and [`XLNetTokenizer`]. Based on
     [SentencePiece](https://github.com/google/sentencepiece).

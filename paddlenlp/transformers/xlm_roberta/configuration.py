@@ -1,4 +1,5 @@
 # coding=utf-8
+# Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
 #
@@ -77,7 +78,7 @@ class XLMRobertaConfig(PretrainedConfig):
     Examples:
 
     ```python
-    >>> from ppdiffusers.transformers import XLMRobertaConfig, XLMRobertaModel
+    >>> from paddlenlp.transformers import XLMRobertaConfig, XLMRobertaModel
 
     >>> # Initializing a XLM-RoBERTa xlm-roberta-base style configuration
     >>> configuration = XLMRobertaConfig()
@@ -113,7 +114,7 @@ class XLMRobertaConfig(PretrainedConfig):
         classifier_dropout=None,
         **kwargs,
     ):
-        kwargs["return_dict"] = kwargs.pop("return_dict", True)
+        kwargs["return_dict"] = kwargs.pop("return_dict", False)
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
 
         self.vocab_size = vocab_size

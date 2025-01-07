@@ -41,16 +41,17 @@ from ..model_utils import (
     apply_chunking_to_forward,
     register_base_model,
 )
-from .configuration import XLMRobertaConfig
+from .configuration import PRETRAINED_INIT_CONFIGURATION, XLMRobertaConfig
 
-XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST = [
-    "xlm-roberta-base",
-    "xlm-roberta-large",
-    "xlm-roberta-large-finetuned-conll02-dutch",
-    "xlm-roberta-large-finetuned-conll02-spanish",
-    "xlm-roberta-large-finetuned-conll03-english",
-    "xlm-roberta-large-finetuned-conll03-german",
-    # See all XLM-RoBERTa models at https://huggingface.co/models?filter=xlm-roberta
+__all__ = [
+    "XLMRobertaModel",
+    "XLMRobertaPretrainedModel",
+    "XLMRobertaForSequenceClassification",
+    "XLMRobertaForTokenClassification",
+    "XLMRobertaForQuestionAnswering",
+    "XLMRobertaForMaskedLM",
+    "XLMRobertaForMultipleChoice",
+    "XLMRobertaForCausalLM",
 ]
 
 
@@ -556,6 +557,12 @@ class XLMRobertaPretrainedModel(PretrainedModel):
     """
 
     config_class = XLMRobertaConfig
+    pretrained_init_configuration = PRETRAINED_INIT_CONFIGURATION
+    pretrained_resource_files_map = {
+        "model_state": {
+            "hf-internal-testing/tiny-random-onnx-xlm-roberta": "https://bj.bcebos.com/paddlenlp/models/community/hf-internal-testing/tiny-random-onnx-xlm-roberta/model.safetensors",
+        }
+    }
     base_model_prefix = "roberta"
     supports_gradient_checkpointing = True
     _no_split_modules = ["XLMRobertaEmbeddings", "XLMRobertaSelfAttention"]
@@ -629,7 +636,7 @@ class XLMRobertaPretrainedModel(PretrainedModel):
             )
 
         # downstream mappings
-        if "XLMRobertForQuestionAnswering" in architectures:
+        if "XLMRobertaForQuestionAnswering" in architectures:
             model_mappings.extend(
                 [
                     ["qa_outputs.weight", "qa_outputs.weight", "transpose"],
@@ -1225,11 +1232,19 @@ class XLMRobertaLMHead(nn.Layer):
             # The output weights are the same as the input embeddings, but there is
             # an output-only bias for each token.
             self.decoder = nn.Linear(config.hidden_size, config.vocab_size, bias_attr=False)
-            self.bias = nn.Parameter(paddle.zeros((config.vocab_size,)))
+            # self.bias = nn.Parameter(paddle.zeros((config.vocab_size,)))
+            data = paddle.zeros((config.vocab_size,))
+            self.bias = paddle.create_parameter(
+                data.shape, dtype=data.dtype, default_initializer=nn.initializer.Assign(data)
+            )
             # Need a link between the two variables so that the bias is correctly resized with `resize_token_embeddings`
             self.decoder.bias = self.bias
         else:
-            self.bias = nn.Parameter(paddle.zeros((config.vocab_size,)))
+            # self.bias = nn.Parameter(paddle.zeros((config.vocab_size,)))
+            data = paddle.zeros((config.vocab_size,))
+            self.bias = paddle.create_parameter(
+                data.shape, dtype=data.dtype, default_initializer=nn.initializer.Assign(data)
+            )
             decoder_weight = input_embeddings.weight if hasattr(input_embeddings, "weight") else input_embeddings
             self.decoder = lambda x: paddle.matmul(x, decoder_weight, transpose_y=True) + self.bias
 

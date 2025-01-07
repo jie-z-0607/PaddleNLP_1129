@@ -18,7 +18,33 @@
 
 from ..model_utils import PretrainedConfig
 
-__all__ = ["XLMRobertaConfig"]
+__all__ = ["PRETRAINED_INIT_CONFIGURATION", "XLMRobertaConfig"]
+
+PRETRAINED_INIT_CONFIGURATION = {
+    "hf-internal-testing/tiny-random-onnx-xlm-roberta": {
+        "attention_probs_dropout_prob": 0.1,
+        "bos_token_id": 0,
+        "classifier_dropout": None,
+        "eos_token_id": 2,
+        "hidden_act": "gelu",
+        "hidden_dropout_prob": 0.1,
+        "hidden_size": 4,
+        "initializer_range": 0.02,
+        "intermediate_size": 37,
+        "layer_norm_eps": 1e-05,
+        "max_position_embeddings": 514,
+        "model_type": "xlm-roberta",
+        "num_attention_heads": 4,
+        "num_hidden_layers": 5,
+        "output_past": True,
+        "pad_token_id": 1,
+        "position_embedding_type": "absolute",
+        "dtype": "float32",
+        "type_vocab_size": 1,
+        "use_cache": True,
+        "vocab_size": 250002,
+    },
+}
 
 
 class XLMRobertaConfig(PretrainedConfig):

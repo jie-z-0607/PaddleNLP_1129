@@ -98,15 +98,14 @@ class XLMRobertaTokenizer(PretrainedTokenizer):
     """
 
     resource_files_names = {"vocab_file": "sentencepiece.bpe.model"}
-    pretrained_resource_files_map = {}
+    pretrained_resource_files_map = {
+        "vocab_file": {
+            "BAAI/bge-m3": "https://bj.bcebos.com/paddlenlp/models/community/BAAI/bge-m3/sentencepiece.bpe.model",
+        }
+    }
     pretrained_init_configuration = {}
     max_model_input_sizes = {
-        "xlm-roberta-base": 512,
-        "xlm-roberta-large": 512,
-        "xlm-roberta-large-finetuned-conll02-dutch": 512,
-        "xlm-roberta-large-finetuned-conll02-spanish": 512,
-        "xlm-roberta-large-finetuned-conll03-english": 512,
-        "xlm-roberta-large-finetuned-conll03-german": 512,
+        "BAAI/bge-m3": 8192,
     }
     model_input_names = ["input_ids", "attention_mask"]
 
